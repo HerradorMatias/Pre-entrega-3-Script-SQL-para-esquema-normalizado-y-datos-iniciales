@@ -1,64 +1,70 @@
 CREATE DATABASE Ventas_Tech_DB;
-USE Ventas_Tech_DB;
+GO
 
+USE Ventas_Tech_DB;
+GO
+
+-- === SECCIÓN 1: DROP ===
+-- Se eliminan en orden inverso a las dependencias para no violar las FK
 DROP TABLE IF EXISTS ventas;
 DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS clientes;
 DROP TABLE IF EXISTS categorias;
 
---- Defino la creación de la tabla "Categorias" y declaro como estará estructurada.
+-- === SECCIÓN 2: CREATE ===
+-- Defino la creación de la tabla "categorias" y declaro cómo estará estructurada.
+CREATE TABLE categorias (
+    id_categoria      INT           PRIMARY KEY,
+    nombre_categoria  VARCHAR(50)   NOT NULL,
+    descripcion       VARCHAR(200)
+);
 
-CREATE TABLE Categorias (
-ID_Categoria INT  PRIMARY KEY,
-NombreCategoria VARCHAR(50) NOT NULL,
-Descripcion VARCHAR(200)
-)
+-- Defino la creación de la tabla "clientes" y declaro cómo estará estructurada.
+CREATE TABLE clientes (
+    id_cliente      INT           PRIMARY KEY,
+    nombre          VARCHAR(100)  NOT NULL,
+    email           VARCHAR(100)  UNIQUE,
+    ciudad          VARCHAR(50),
+    fecha_registro  DATE          NOT NULL
+);
 
---- Defino la creación de la tabla "Clientes" y declaro como estará estructurada.
-
-CREATE TABLE Clientes (
-ID_Cliente INT PRIMARY KEY,
-Nombre VARCHAR(100) NOT NULL,
-Email VARCHAR(100) NOT NULL UNIQUE,
-Ciudad VARCHAR(50) NOT NULL,
-FechaRegistro DATE NOT NULL,
-) 
-
-CREATE TABLE Productos (
-    ID_Producto      INT    PRIMARY KEY,
+-- Defino la creación de la tabla "productos" (depende de categorias).
+CREATE TABLE productos (
+    id_producto      INT            PRIMARY KEY,
     nombre_producto  VARCHAR(100)   NOT NULL,
-    ID_Categoria     INT           NOT NULL, 
+    id_categoria     INT,
     precio           DECIMAL(10,2)  NOT NULL,
     stock            INT            DEFAULT 0,
-    activo           BIT            DEFAULT 1
+    activo           BIT            DEFAULT 1,
 
-    CONSTRAINT FK_Productos_Categoria FOREIGN KEY (ID_Categoria) REFERENCES Categorias (ID_Categoria),
-)
+    CONSTRAINT FK_productos_categorias FOREIGN KEY (id_categoria) REFERENCES categorias (id_categoria)
+);
 
--- Tabla de hechos
+-- Tabla de hechos (depende de clientes y productos)
 CREATE TABLE ventas (
-    ID_Venta         INT            PRIMARY KEY,
-    ID_Cliente       INT          NOT NULL, 
-    ID_Producto      INT           NOT NULL,
+    id_venta         INT            PRIMARY KEY,
+    id_cliente       INT,
+    id_producto      INT,
     cantidad         INT            NOT NULL,
     precio_unitario  DECIMAL(10,2)  NOT NULL,
-    fecha_venta      DATE           NOT NULL
+    fecha_venta      DATE           NOT NULL,
 
-    CONSTRAINT FK_Ventas_Cliente FOREIGN KEY (ID_Cliente) REFERENCES Clientes (ID_Cliente),
-    CONSTRAINT FK_Ventas_Producto FOREIGN KEY (ID_Producto) REFERENCES Productos (ID_Producto),
+    CONSTRAINT FK_ventas_clientes  FOREIGN KEY (id_cliente)  REFERENCES clientes (id_cliente),
+    CONSTRAINT FK_ventas_productos FOREIGN KEY (id_producto) REFERENCES productos (id_producto)
 );
--- === SECCIÓN 3: INSERT DATA (25 registros) ===
+
+-- === SECCIÓN 3: INSERT (25 registros) ===
 -- Primero las tablas sin dependencias
 
 -- categorias — 4 registros
-INSERT INTO categorias (ID_Categoria, NombreCategoria, Descripcion) VALUES
+INSERT INTO categorias (id_categoria, nombre_categoria, descripcion) VALUES
   (1, 'Computación',    'Laptops, PCs y monitores'),
   (2, 'Accesorios',     'Periféricos y complementos'),
   (3, 'Audio',          'Auriculares y parlantes'),
   (4, 'Almacenamiento', 'Discos y memorias');
 
 -- clientes — 5 registros
-INSERT INTO clientes (ID_Cliente, nombre, email, ciudad, FechaRegistro) VALUES
+INSERT INTO clientes (id_cliente, nombre, email, ciudad, fecha_registro) VALUES
   (1, 'María López',  'maria@mail.com',  'Buenos Aires', '2024-01-05'),
   (2, 'Carlos Ruiz',  'carlos@mail.com', 'Córdoba',      '2024-01-10'),
   (3, 'Ana Gómez',    'ana@mail.com',    'Rosario',      '2024-02-01'),
@@ -66,7 +72,7 @@ INSERT INTO clientes (ID_Cliente, nombre, email, ciudad, FechaRegistro) VALUES
   (5, 'Laura Torres', 'laura@mail.com',  'Tucumán',      '2024-03-01');
 
 -- productos — 6 registros
-INSERT INTO productos (ID_Producto, nombre_producto, ID_Categoria, precio, stock, activo) VALUES
+INSERT INTO productos (id_producto, nombre_producto, id_categoria, precio, stock, activo) VALUES
   (1, 'Laptop Pro 15',      1, 1200.00, 15, 1),
   (2, 'Mouse Inalámbrico',  2,   28.00, 80, 1),
   (3, 'Monitor 4K 27',      1,  450.00, 12, 1),
@@ -75,7 +81,7 @@ INSERT INTO productos (ID_Producto, nombre_producto, ID_Categoria, precio, stock
   (6, 'Teclado Mecánico',   2,   95.00, 40, 1);
 
 -- ventas — 10 registros
-INSERT INTO ventas (ID_Venta, ID_Cliente, ID_Producto, cantidad, precio_unitario, fecha_venta) VALUES
+INSERT INTO ventas (id_venta, id_cliente, id_producto, cantidad, precio_unitario, fecha_venta) VALUES
   ( 1, 1, 1, 2, 1200.00, '2024-03-05'),
   ( 2, 2, 2, 5,   28.00, '2024-03-06'),
   ( 3, 3, 3, 1,  450.00, '2024-03-07'),
@@ -87,10 +93,9 @@ INSERT INTO ventas (ID_Venta, ID_Cliente, ID_Producto, cantidad, precio_unitario
   ( 9, 4, 4, 1,  120.00, '2024-03-14'),
   (10, 5, 3, 2,  450.00, '2024-03-15');
 
-  -- === SECCIÓN 4: VALIDACIÓN ===
+-- === SECCIÓN 4: VALIDACIÓN ===
 -- Deben devolver 4, 5, 6 y 10 filas respectivamente
 SELECT * FROM categorias;   -- esperado: 4 filas
 SELECT * FROM clientes;     -- esperado: 5 filas
 SELECT * FROM productos;    -- esperado: 6 filas
 SELECT * FROM ventas;       -- esperado: 10 filas
- 
