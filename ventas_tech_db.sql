@@ -1,4 +1,4 @@
-CREATE DATABASE Ventas_Tech_DB;
+  CREATE DATABASE Ventas_Tech_DB;
 GO
 
 USE Ventas_Tech_DB;
@@ -10,6 +10,8 @@ DROP TABLE IF EXISTS ventas;
 DROP TABLE IF EXISTS productos;
 DROP TABLE IF EXISTS clientes;
 DROP TABLE IF EXISTS categorias;
+
+GO
 
 -- === SECCIÓN 2: CREATE ===
 -- Defino la creación de la tabla "categorias" y declaro cómo estará estructurada.
@@ -53,6 +55,8 @@ CREATE TABLE ventas (
     CONSTRAINT FK_ventas_productos FOREIGN KEY (id_producto) REFERENCES productos (id_producto)
 );
 
+GO
+
 -- === SECCIÓN 3: INSERT (25 registros) ===
 -- Primero las tablas sin dependencias
 
@@ -93,6 +97,8 @@ INSERT INTO ventas (id_venta, id_cliente, id_producto, cantidad, precio_unitario
   ( 9, 4, 4, 1,  120.00, '2024-03-14'),
   (10, 5, 3, 2,  450.00, '2024-03-15');
 
+GO
+    
 -- === SECCIÓN 4: VALIDACIÓN ===
 -- Deben devolver 4, 5, 6 y 10 filas respectivamente
 SELECT * FROM categorias;   -- esperado: 4 filas
