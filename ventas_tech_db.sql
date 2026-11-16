@@ -1,1 +1,0 @@
-ventas_tech_db.sql
